@@ -1,0 +1,865 @@
+---
+title: "Assignment B"
+author: "Jizhou Zhang"
+date: "2025-09-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exercise 1 
+
+## 1
+```{r}
+Va <- 1:20
+Va
+Vb <- 20:1
+Vb
+Vc <- c(1:20,19:1)
+Vc
+tmp <- c(4,6,3)
+tmp
+Ve <- rep(tmp, times = 10)
+Ve
+Vf <- rep(tmp, length.out = 31)
+Vf
+Vg <- rep(tmp, times = c(10, 20, 30))
+Vg
+```
+
+## 2
+```{r}
+x <- seq(3, 6, by = 0.1)
+y <- exp(x) * cos(x)
+y
+```
+
+
+## 3(a)
+```{r}
+#(a)
+Va <- 0.1 ^ (seq(3,36,by = 3)) * 0.2 ^ (seq(1,34,by = 3))
+Va
+```
+
+## 3(b)
+```{r}
+#(b)
+Vb <- 2 ^ (1:25) / (1:25)
+Vb
+```
+
+## 4(a)
+```{r}
+i <- 10:100
+sum(i^3 + 4*i^2)
+```
+## 4(b)
+```{r}
+i <- 1:25
+sum((2^i)/i + (3^i)/(i^2))
+```
+
+## 5(a)
+```{r}
+labels <- paste("label", 1:30)
+labels
+```
+
+## 5(b)
+```{r}
+fns <- paste("fn", 1:30, sep = "")
+fns
+```
+
+## 6(a)
+```{r}
+set.seed(50)
+xVec <- sample(0:999, 250, replace = TRUE)
+yVec <- sample(0:999, 250, replace = TRUE)
+
+a1_6 <- yVec[2:250] - xVec[1:249]
+a1_6
+```
+
+## 6(b)
+```{r}
+b1_6 <- sin(yVec[1:249]) / cos(xVec[2:250])
+b1_6
+```
+
+## 6(c)
+```{r}
+c1_6 <- xVec[1:248] + 2*xVec[2:249] - xVec[3:250]
+c1_6
+```
+
+## 6(d)
+```{r}
+d1_6 <- sum(exp(-xVec[2:250]) / (xVec[1:249] + 10))
+d1_6
+```
+
+## 7(a)
+```{r}
+a1_7 <- yVec[yVec > 600]
+a1_7
+```
+
+## 7(b)
+```{r}
+b1_7 <- which(yVec > 600)
+b1_7
+```
+
+## 7(c)
+```{r}
+c1_7 <- xVec[which(yVec > 600)]
+c1_7
+```
+
+## 7(d)
+```{r}
+xbar <- mean(xVec)
+d1_7 <- sqrt(abs(xVec - xbar))
+d1_7
+```
+
+## 7(e)
+```{r}
+e1_7 <- sum(yVec >= (max(yVec) - 200))
+e1_7
+```
+## 7(f)
+```{r}
+f1_7 <- sum(xVec %% 2 == 0)
+f1_7
+```
+
+## 7(g)
+```{r}
+g1_7 <- xVec[order(yVec)]
+g1_7
+```
+
+## 7(h)
+```{r}
+h1_7 <- yVec[seq(1, 250, by = 3)]
+h1_7
+```
+
+## 8
+```{r}
+k <- 1:19
+q1_8 <- 1 + sum(cumprod((2*k)/(2*k + 1)))
+q1_8
+```
+
+# Exercise 2
+## 1(a)
+```{r}
+A <- rbind(c(1, 1, 3),
+           c(5, 2, 6),
+           c(-2, -1, -3))
+
+A2 <- A %*% A     
+A3 <- A2 %*% A
+A3
+```
+
+## 1(b)
+```{r}
+A_new <- A
+A_new[,3] <- A_new[,3] + A_new[,2]
+A_new
+```
+
+## 2
+```{r}
+B <- matrix(rep(c(10, -10, 10), 15), nrow = 15, byrow = TRUE)
+B
+
+cspdtB <- crossprod(B)
+cspdtB
+```
+
+## 3
+```{r}
+matE <- matrix(0, nrow = 6, ncol = 6)
+matE <- (abs(row(matE) - col(matE)) == 1) * 1
+matE
+```
+## 4
+```{r}
+q2_4 <- outer(0:4, 0:4, "+")
+q2_4
+```
+
+## 5(a)
+```{r}
+n <- 5
+A2_5a <- outer(0:(n-1), 0:(n-1), "+") %% n
+A2_5a
+```
+
+## 5(b)
+```{r}
+n <- 10
+A2_5b <- outer(0:(n-1), 0:(n-1), "+") %% n
+A2_5b
+
+```
+
+## 5(c)
+```{r}
+n <- 9
+A2_5c <- outer(0:(n-1), 0:(n-1), "-") %% n
+A2_5c
+```
+
+## 6
+```{r}
+n <- 5
+A2_6 <- abs(row(matrix(0, n, n)) - col(matrix(0, n, n))) + 1
+
+y <- c(7, -1, -3, 5, 17)
+
+x <- solve(A2_6, y)
+x
+
+
+```
+
+## 7(a)
+```{r}
+set.seed(75)
+aMat <- matrix(sample(10, size = 60, replace = TRUE), nrow = 6)
+
+rows_gt4 <- rowSums(aMat > 4)
+rows_gt4
+```
+
+## 7(b)
+```{r}
+rows_with_two_7 <- which(rowSums(aMat == 7) == 2)
+rows_with_two_7
+```
+
+## 7(c)
+```{r}
+s <- colSums(aMat)
+s
+```
+
+## 8(a)
+```{r}
+ia <- 1:20; ja <- 1:5
+q2_8a <- sum(outer(ia^4, 1/(3 + ja)))
+q2_8a
+```
+
+## 8(b)
+```{r}
+ib <- 1:20; jb <- 1:5
+q2_8b <- sum(outer(ib, jb, function(ibib, jbjb) ibib^4 / (3 + ibib*jbjb)))
+q2_8b
+```
+## 8(c)
+```{r}
+ic <- 1:10
+q1_8c <- sum(sapply(ic, function(icic) sum(icic^4 / (3 + icic*(1:icic)))))
+q1_8c
+
+```
+
+# Exercise 3
+## 1(a)
+```{r}
+tmpFn1 <- function(xVec) {
+  n <- length(xVec)
+  xVec ^ (1:n)
+}
+
+tmpFn2 <- function(xVec) {
+  n <- length(xVec)
+  xVec ^ (1:n) / (1:n)
+}
+```
+
+## 1(b)
+```{r}
+tmpFn3 <- function(x, n) {
+  1 + sum(x^(1:n) / (1:n))
+}
+
+```
+
+## 2
+```{r}
+tmpFn <- function(xVec) {
+  n <- length(xVec)
+  (xVec[1:(n-2)] + xVec[2:(n-1)] + xVec[3:n]) / 3
+}
+tmpFn(c(1:5, 6:1))
+```
+
+## 3
+```{r}
+tmpFn <- function(xVec) {
+  result <- numeric(length(xVec))
+  result[xVec < 0] <- xVec[xVec < 0]^2 + 2*xVec[xVec < 0] + 3
+  result[xVec >= 0 & xVec < 2] <- xVec[xVec >= 0 & xVec < 2] + 3
+  result[xVec >= 2] <- xVec[xVec >= 2]^2 + 4*xVec[xVec >= 2] - 7
+  
+  return(result)
+}
+xVals <- seq(-3, 3, length=200)
+yVals <- tmpFn(xVals)
+
+plot(xVals, yVals, type="l", col="blue", lwd=2,
+     main="Plot of f(x)", xlab="x", ylab="f(x)")
+
+```
+
+## 4
+```{r}
+dbodd <- function(mat) {
+  mat[mat %% 2 != 0] <- mat[mat %% 2 != 0] * 2
+  return(mat)
+}
+A <- matrix(c(1,1,3,5,2,6,-2,-1,-3), nrow=3, byrow=TRUE)
+A
+dbodd(A)
+
+```
+
+## 5
+```{r}
+A3_5 <- function(n, k) {
+  mat <- matrix(0, n, n)
+  
+  diag(mat) <- k
+  
+  diag(mat[-1, ]) <- 1     
+  diag(mat[, -1]) <- 1     
+  
+  return(mat)
+}
+A3_5(5,2)
+```
+
+## 6
+```{r}
+quadrant <- function(alpha) {
+  a <- alpha %% 360
+  
+  if (a >= 0 && a < 90) {
+    return(1)
+  } else if (a >= 90 && a < 180) {
+    return(2)
+  } else if (a >= 180 && a < 270) {
+    return(3)
+  } else {
+    return(4)
+  }
+}
+```
+
+# Exercise 4
+## 1(a)(b)(c)(d)(e)
+```{r}
+z_outer <- function(xVec, yVec) {
+  x <- as.vector(xVec); y <- as.vector(yVec)
+  if (!is.numeric(x) || !is.numeric(y)) stop("xVec and yVec must be numeric")
+  if (length(x) == 0) return(integer(0))
+  if (length(y) == 0) return(integer(length(x)))
+  colSums(outer(y, x, "<"))
+}  
+
+z_sapply <- function(xVec, yVec) {
+  x <- as.vector(xVec); y <- as.vector(yVec)
+  if (!is.numeric(x) || !is.numeric(y)) stop("xVec and yVec must be numeric")
+  if (length(x) == 0) return(integer(0))
+  if (length(y) == 0) return(integer(length(x)))
+  sapply(x, function(xk) sum(y < xk))
+}
+
+z_vapply <- function(xVec, yVec) {
+  x <- as.vector(xVec); y <- as.vector(yVec)
+  if (!is.numeric(x) || !is.numeric(y)) stop("xVec and yVec must be numeric")
+  if (length(x) == 0) return(integer(0))
+  if (length(y) == 0) return(integer(length(x)))
+  vapply(x, function(xk) sum(y < xk), integer(1))
+}
+
+xVec <- c(3, 5, 7)
+yVec <- c(1, 4, 6)
+xMat <- matrix(c(3, 5, 7, 9), nrow=2)
+yMat <- matrix(c(1, 4, 6, 8), nrow=2)
+
+z_outer(xVec, yVec)
+z_outer(xMat, yVec)
+z_outer(xVec, yMat)
+z_outer(xMat, yMat)
+z_outer(numeric(0), yVec)
+z_outer(xVec, numeric(0))
+
+set.seed(1)
+xVec <- sample(1:1e5, 1e4, replace=TRUE)
+yVec <- sample(1:1e5, 1e4, replace=TRUE)
+
+system.time(z_outer(xVec, yVec))
+system.time(z_sapply(xVec, yVec))
+system.time(z_vapply(xVec, yVec))
+
+# z_outer is the slower than z_vapply and z_sapply. z_vapply and z_sapply has almost the same speed
+```
+
+## 2(a)(b)
+```{r}
+A3_2a <- function(matA) {
+  matA[, !apply(matA, 2, anyNA), drop = FALSE]
+}
+
+A3_2b <- function(matA) {
+  good_rows <- !apply(matA, 1, anyNA)
+  good_cols <- !apply(matA, 2, anyNA)
+  matA[good_rows, good_cols, drop = FALSE]
+}
+
+matA <- matrix(c(1, 2, NA, 4, 5, 6, 7, NA, 9), nrow=3, byrow=TRUE)
+matA
+A3_2a(matA)
+A3_2b(matA)
+
+```
+
+## 3(a)(b)
+```{r}
+empCopula_really_naive <- function(u, v, xVec, yVec) {
+  n <- length(xVec)
+  if (length(u) == 1 && length(v) == 1) {
+    rx <- rank(xVec); ry <- rank(yVec)
+    cnt <- 0L
+    for (i in seq_len(n)) {
+      Ui <- rx[i] / (n + 1)
+      Vi <- ry[i] / (n + 1)
+      if (Ui <= u && Vi <= v) cnt <- cnt + 1L
+    }
+    return(cnt / n)
+  }
+
+  if (length(u) == length(v)) {
+    out <- numeric(length(u))
+    for (k in seq_along(u)) {
+      rx <- rank(xVec); ry <- rank(yVec)
+      cnt <- 0L
+      for (i in seq_len(n)) {
+        Ui <- rx[i] / (n + 1)
+        Vi <- ry[i] / (n + 1)
+        if (Ui <= u[k] && Vi <= v[k]) cnt <- cnt + 1L
+      }
+      out[k] <- cnt / n
+    }
+    return(out)
+  }
+
+  stop("u and v must be scalars or equal-length vectors.")
+}
+
+set.seed(1)
+x <- rnorm(50); y <- rnorm(50)
+
+ia <- empCopula_really_naive(0.6, 0.7, x, y)                        
+ia
+ib <- empCopula_really_naive(seq(0.2,0.8,0.2), seq(0.3,0.9,0.2), x, y)
+ib
+
+```
+
+## 4(a)
+```{r}
+funA <- function(n) {
+  ans <- 0
+  for (r in 1:n) {
+    for (s in 1:r) {
+      ans <- ans + s^2 / (10 + 4*r^3)
+    }
+  }
+  ans
+}
+```
+
+## 4(b)
+```{r}
+funB <- function(n) {
+  R <- row(matrix(0, n, n))
+  S <- col(matrix(0, n, n))
+  sum((S <= R) * (S^2)/(10 + 4*R^3))
+}
+```
+
+## 4(c)
+```{r}
+funC <- function(n) {
+  r <- 1:n; s <- 1:n
+  M <- outer(r, s, function(rr, ss) (ss <= rr) * (ss^2)/(10 + 4*rr^3))
+  sum(M)
+}
+```
+
+## 4(d)
+```{r}
+inner <- function(r) sum((1:r)^2/(10 + 4*r^3))
+funD <- function(n) sum(sapply(1:n, inner))
+
+## compared to (e) same with lapply+unlist (usually similar speed to sapply)
+funE <- function(n) sum(unlist(lapply(1:n, inner)))
+
+```
+
+## 4(e)
+```{r}
+term <- function(r, s) (s <= r) * s^2/(10 + 4*r^3)
+funF <- function(n) {
+  sum(mapply(term, rep(1:n, each = n), rep(1:n, times = n)))
+}
+```
+
+## 4(testing)
+```{r}
+n <- 1000
+system.time(funA(n))
+system.time(funB(n))
+system.time(funC(n))
+system.time(funD(n))
+system.time(funE(n))
+system.time(funF(n))
+
+# funA funB funC funD funE are all fastest, funF is the sloweset
+```
+
+#Exercise 5
+## 1(a)(b)
+```{r}
+tsEwma_a <- function(tsDat, m0 = 0, delta = 0.7) {
+  n <- length(tsDat)
+  m <- rep(NA, n)
+  m_prev <- m0
+  for (t in 1:n) {
+    e <- tsDat[t] - m_prev
+    m_prev <- m_prev + (1 - delta) * e
+    m[t] <- m_prev
+  }
+  ts(m, start = start(tsDat), frequency = frequency(tsDat))
+}
+
+tsEwma_b <- function(tsDat, m0 = 0, delta = 0.7) {
+  z <- as.numeric(tsDat)   # just numeric vector
+  n <- length(z)
+  m <- rep(NA, n)
+  m_prev <- m0
+  for (t in 1:n) {
+    e <- z[t] - m_prev
+    m_prev <- m_prev + (1 - delta) * e
+    m[t] <- m_prev
+  }
+  ts(m, start = start(tsDat), frequency = frequency(tsDat))
+}
+
+set.seed(1)
+datVec <- cumsum(rnorm(240))
+tsDat  <- ts(datVec, start = c(1960, 3), frequency = 12)
+
+m_a <- tsEwma_a(tsDat)        ; head(m_a)
+m_b <- tsEwma_b(tsDat)        ; head(m_b)
+
+all.equal(m_a, m_b)
+
+system.time(tsEwma_a(tsDat))
+system.time(tsEwma_b(tsDat))
+
+# they use almost the same speed
+
+```
+
+## 2 (a)(b)
+```{r}
+myListFn <- function(n) {
+  x <- rnorm(n)
+  xbar <- mean(x)
+  if (xbar >= 0) {
+    y <- rexp(n, rate = 1 / xbar)
+  } else {
+    z <- rexp(n, rate = 1 / (-xbar))
+    y <- -z
+  }
+  k <- sum(abs(y) > abs(x))
+  list(xVec = x, yVec = y, count = k)
+}
+
+
+out1 <- lapply(rep(10, 4), myListFn)
+# out1
+out2 <- sapply(rep(10, 4), myListFn)
+# out2
+
+set.seed(1)
+myList <- lapply(rep(10, 1000), myListFn)
+# myList
+
+```
+
+## 2(c)(d)
+```{r}
+y_list <- lapply(myList, `[[`, "yVec")
+y_mat <- sapply(myList, `[[`, "yVec")
+# y_mat
+```
+
+## 2(e)(f)
+```{r}
+myList_noCount <- lapply(myList, function(lst) { lst$count <- NULL; lst })
+# myList_noCount
+
+idx <- which(sapply(myList, `[[`, "count") > 2)
+myList_gt2 <- myList[idx]
+# myList_gt2
+```
+
+## 3(a)(b)(c)
+```{r}
+#(a)
+part_a <- function(myList) {
+  I <- length(myList)
+  p <- length(myList[[1]]$xVec)
+  w <- 1:p
+  out <- numeric(I)
+
+  for (i in 1:I) {
+    num <- 0
+    den <- 0
+    xi <- myList[[i]]$xVec
+    yi <- myList[[i]]$yVec
+    for (j in 1:p) {
+      num <- num + w[j] * xi[j]
+      den <- den + w[j] * yi[j]
+    }
+    out[i] <- num / den
+  }
+  return(out)
+}
+
+#(b)
+part_b <- function(myList) {
+  I <- length(myList)
+  p <- length(myList[[1]]$xVec)
+  out <- matrix(NA_real_, nrow = I, ncol = p)
+
+  for (i in 1:I) {
+    for (j in 1:p) {
+      out[i, j] <- myList[[i]]$xVec[j] - myList[[i]]$yVec[j]
+    }
+  }
+  return(out)
+}
+
+#(c)
+part_c <- function(myList) {
+  I <- length(myList)
+  num <- 0
+  den <- 0
+  for (i in 1:I) {
+    xi2 <- myList[[i]]$xVec[2]
+    yi2 <- myList[[i]]$yVec[2]
+    ni  <- length(myList[[i]]$yVec)
+    num <- num + i  * xi2
+    den <- den + ni * yi2
+  }
+  return(num / den)
+}
+
+# part_a(myList)
+# part_b(myList)
+# part_c(myList)
+
+```
+
+
+## 4(a)
+```{r}
+testFn <- function(arr) {
+  d1 <- dim(arr)[1]
+  d2 <- dim(arr)[2]
+  d3 <- dim(arr)[3]
+  
+  w <- array(0, dim = c(d1, d2, d3))
+  z <- matrix(0, nrow = d2, ncol = d3)
+    for (j in 1:d2) {
+    for (k in 1:d3) {
+      temp <- arr[, j, k]
+            theMin <- min(temp)
+      theMax <- max(temp)
+            for (i in 1:d1) {
+        w[i, j, k] <- arr[i, j, k] - theMin
+      }
+            z[j, k] <- sum(temp) - theMax
+    }
+  }
+    return(list(w = w, z = z))
+}
+
+
+testFn2 <- function(arr) {
+  d1 <- dim(arr)[1]
+  d2 <- dim(arr)[2]
+  d3 <- dim(arr)[3]
+  
+  z <- matrix(0, nrow = d2, ncol = d3)
+  
+  for (j in 1:d2) {
+    for (k in 1:d3) {
+      temp <- arr[, j, k]
+      theMin <- min(temp)
+            total <- 0
+      for (i in 1:d1) {
+        total <- total + (arr[i, j, k] - theMin)
+      }
+      
+      z[j, k] <- total
+    }
+  }
+  
+  return(z)
+}
+
+set.seed(123)
+testArray <- array(sample(1:60, 60, replace = FALSE), dim = c(5, 4, 3))
+
+result1 <- testFn(testArray)
+result2 <- testFn2(testArray)
+
+str(result1)
+result2
+
+
+```
+
+## 5
+```{r}
+A <- matrix(c(0,0,
+              1,3,
+              2,0,
+              4/9,4/3,
+              14/9,4/3), 
+            ncol=2, byrow=TRUE)
+
+drawA <- function(X) {
+  lines(X[1:3,1], X[1:3,2])
+  lines(X[4:5,1], X[4:5,2])
+}
+
+```
+
+## 5(a)
+```{r}
+shift <- function(X, a, b) {
+  n <- nrow(X)
+  S <- matrix(rep(c(a,b), n), ncol=2, byrow=TRUE)
+  return(X + S)
+}
+
+plot(c(-10,10), c(-10,10), ann=FALSE, type='n')
+drawA(shift(A, 3, 2))
+
+```
+
+## 5(b)
+```{r}
+rotate <- function(X, r) {
+  R <- matrix(c(cos(r), sin(r), -sin(r), cos(r)), ncol=2, byrow=TRUE)
+  return(X %*% t(R))
+}
+
+plot(c(-10,10), c(-10,10), ann=FALSE, type='n')
+drawA(rotate(A, pi/4))
+
+```
+
+## 5(c)
+```{r}
+arrayA <- array(0, dim=c(5,2,25))
+arrayA[,,1] <- A
+for (i in 2:25) {
+  r <- 2*pi*(i-1)/24
+  arrayA[,,i] <- rotate(A, r)
+}
+
+# plot 25 A's
+plot(c(-10,10), c(-10,10), ann=FALSE, type='n')
+for (i in 1:25) {
+  drawA(arrayA[,,i])
+}
+
+# plot top vertex of A
+plot(c(-10,10), c(-10,10), ann=FALSE, type='n')
+points(arrayA[2,1,], arrayA[2,2,], pch=19)
+
+#Plot y-coordinate of top vertex vs. time
+plot(1:25, arrayA[2,2,], type='o')
+
+library(animation)
+oopt = ani.options(interval = 0.2, nmax = 25)
+for (i in 1:ani.options("nmax")) {
+  plot(c(-10,10), c(-10,10), ann=FALSE, type='n')
+  drawA(arrayA[,,i])
+  ani.pause()
+}
+```
+
+## 5(d)
+```{r}
+scaleAB <- function(X, a, b) {
+  T <- matrix(c(a,0,0,b), ncol=2, byrow=TRUE)
+  return(X %*% t(T))
+}
+
+plot(c(-10,10), c(-10,10), ann=FALSE, type='n')
+drawA(scaleAB(A, 2, 1))
+drawA(scaleAB(A, 1, 2))
+
+```
+
+
+## 5(e)
+```{r}
+set.seed(123)
+arRandom <- array(0, dim=c(5,2,25))
+for (i in 1:25) {
+  X <- A
+  a <- runif(1, 0.5, 2)
+  b <- runif(1, 0.5, 2)
+  X <- scaleAB(X, a, b)
+  
+  r <- runif(1, 0, 2*pi)
+  X <- rotate(X, r)
+  
+  dx <- runif(1, -5, 5)
+  dy <- runif(1, -5, 5)
+  X <- shift(X, dx, dy)
+  
+  arRandom[,,i] <- X
+}
+
+plot(c(-10,10), c(-10,10), ann=FALSE, type='n')
+for (i in 1:25) {
+  drawA(arRandom[,,i])
+}
+
+```
+
+
+
+
