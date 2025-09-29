@@ -1,0 +1,161 @@
+---
+title: "NOAA Buoy 41010 — Air vs. Water Temperature"
+format: html
+editor: visual
+execute:
+  warning: false
+  message: false
+  echo: false
+---
+
+## At buoy 41010, how have yearly average water temperature changed over time, and how closely do they track air temperature?
+
+```{r}
+library(data.table)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(zoo)
+library(tibble)
+library(readr)
+```
+
+```{r}
+file_root <- "https://www.ndbc.noaa.gov/view_text_file.php?filename=41010h"
+tail <- ".txt.gz&dir=data/historical/stdmet/"
+
+load_buoy_data1 <- function(year) {
+  path <- paste0(file_root, year, tail)
+  
+  
+  if (year < 2007) {
+  header <- scan(path, what = 'character', nlines = 1)
+  buoy <- read.table(path, fill = TRUE, header = TRUE, sep = "")
+  buoy <- add_column(buoy, mm = NA, .after = "hh")
+  buoy <- add_column(buoy, TIDE = NA, .after = "VIS")
+    
+  } else {
+  header <- scan(path, what = 'character', nlines = 1)  
+  buoy <- fread(path, header = FALSE, skip = 1, fill = TRUE)
+
+    setnames(buoy, header)
+  }
+  
+}
+
+all_data1 <- lapply(1988:2024, load_buoy_data1)
+
+combined_data1 <- rbindlist(all_data1, fill = TRUE)
+```
+
+```{r}
+load_buoy_data <- function(year) {
+  path <- paste0(file_root, year, tail)
+
+  header <- scan(path, what = 'character', nlines = 1)
+  num_columns <- length(header)  
+
+  if (num_columns == 16) {
+    buoy <- read.table(path, fill = TRUE, header = TRUE, sep = "")
+    buoy <- add_column(buoy, mm = NA, .after = "hh")
+    buoy <- add_column(buoy, TIDE = NA, .after = "VIS")
+
+  } else if (num_columns == 17) {
+    buoy <- read.table(path, fill = TRUE, header = TRUE, sep = "")
+    buoy <- add_column(buoy, TIDE = NA, .after = "VIS")
+
+  } else {
+    buoy <- fread(path, header = FALSE, skip = 1, fill = TRUE)
+    setnames(buoy, header)
+  }
+
+  return(buoy)
+}
+all_data <- lapply(1988:2024, load_buoy_data)
+combined_data <- rbindlist(all_data, fill = TRUE)
+```
+
+```{r}
+combined_data1 <- combined_data %>%
+  mutate(
+    YY   = as.character(YY),
+    `#YY`= as.character(`#YY`),
+    YYYY = as.character(YYYY)
+  )
+
+combined_data1 <- combined_data1 %>%
+  mutate(YYYY = coalesce(YYYY, `#YY`, YY))
+
+combined_data1 <- combined_data1 %>%
+  mutate(
+    BAR = coalesce(as.numeric(BAR),  as.numeric(PRES)),
+    WD  = coalesce(as.numeric(WD),   as.numeric(WDIR))
+  )
+
+combined_data1 <- combined_data1 %>%
+  select(-TIDE, -`TIDE.1`, -mm, -WDIR, -PRES, -`#YY`, -YY)
+
+combined_data1$datetime <- ymd_h(paste(combined_data1$YYYY,
+                                       combined_data1$MM,
+                                       combined_data1$DD,
+                                       combined_data1$hh, sep = "-"))
+
+combined_data1 <- combined_data1 %>%
+  mutate(across(everything(),
+                ~ na_if(as.numeric(as.character(.)), 99) %>%
+                  na_if(999) %>%
+                  na_if(9999)))
+
+if (!inherits(combined_data1$datetime, "POSIXct")) {
+  combined_data1$datetime <- ymd_h(paste(combined_data1$YYYY,
+                                         combined_data1$MM,
+                                         combined_data1$DD,
+                                         combined_data1$hh, sep = "-"))
+}
+```
+
+## Plots
+
+```{r}
+combined_data1 <- combined_data1 %>%
+  mutate(Year = year(datetime))
+
+combined_data1 <- combined_data1 %>% 
+  dplyr::select(-tidyselect::any_of(c("YYYY")))
+
+yearly_avg_temp <- combined_data1 %>%
+  group_by(Year) %>%
+  summarise(
+    avg_air_temp   = mean(ATMP, na.rm = TRUE),
+    avg_water_temp = mean(WTMP, na.rm = TRUE)
+  )
+
+ggplot(yearly_avg_temp, aes(x = Year)) +
+  geom_line(aes(y = avg_air_temp,   color = "Air Temperature"), linewidth = 1) +
+  geom_line(aes(y = avg_water_temp, color = "Water Temperature"), linewidth = 1) +
+  labs(
+    title = "Buoy 41010: Temperature Trends Over Time",
+    x = "Year",
+    y = "Temperature (°C)",
+    color = "Legend"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+combi <- combined_data1 %>%
+  mutate(Year = as.numeric(Year))
+
+combined_data1 %>%
+  group_by(Year) %>%
+  summarise(
+    air_temp_NA_count   = sum(is.na(ATMP)),
+    water_temp_NA_count = sum(is.na(WTMP)),
+    total_rows          = n()
+  ) %>%
+  arrange(desc(air_temp_NA_count), desc(water_temp_NA_count))
+```
+
+## Explanations
+
+When I look at the plot, I can see that water temperature mostly follows the same pattern as air temperature, just a little smoother. The two lines go up and down together, which makes sense because the ocean surface reacts to the air above it. Over the years, the water line seems to drift up a bit, so I think the ocean here is slowly warming. Some years have gaps or weird jumps, probably from missing data, so I didn’t try to read too much into those. Overall, the big picture is that both air and water are connected, and water temperature is showing a small increase across the record.
