@@ -1,0 +1,105 @@
+---
+title: "Assignment E"
+author: "Jizhou Zhang"
+format:
+  html:
+    toc: true
+    number-sections: true
+    code-fold: show
+---
+
+```{r}
+library(tidyverse)
+library(stringr)
+```
+
+##  Part 1 WDBD data set
+
+What looks messy?
+
+1.  Each year was a separate column, which isn’t tidy.
+2.  The extra note rows at the bottom made it kind of messy to read.
+3.  Some values like ".." and series/country codes missing.
+4.  Units live inside the Series Name, not in their own column.
+
+```{r}
+raw <- readr::read_csv(
+  "WDBD.csv",
+  locale = readr::locale(encoding = "ISO-8859-1"),
+  na = c("", "NA", ".."),
+  show_col_types = FALSE
+)
+
+names(raw) <- gsub(" \\[YR\\d+\\]$", "", names(raw))
+
+clean <- raw %>%
+  filter(!is.na(`Country Code`),
+         grepl("^[A-Z]{3}$", `Country Code`),
+         !is.na(`Series Code`))
+
+year_cols <- names(clean)[grepl("^\\d{4}$", names(clean))]
+
+long_tbl <- clean %>%
+  pivot_longer(
+    cols = all_of(year_cols),
+    names_to = "year",
+    values_to = "value",
+    values_transform = list(value = as.numeric)
+  ) %>%
+  mutate(year = as.integer(year)) %>%
+  mutate(unit = stringr::str_extract(`Series Name`, "\\(([^)]+)\\)$") %>%
+                  stringr::str_replace_all("^\\(|\\)$", ""))
+
+wide_tbl <- long_tbl %>%
+  select(`Country Name`, `Country Code`, year,
+         `Series Code`, value) %>%
+  pivot_wider(names_from = `Series Code`, values_from = value)
+
+
+readr::write_csv(long_tbl, "WDBD_tidy_long.csv")
+readr::write_csv(wide_tbl, "WDBD_wide_by_series.csv")
+```
+
+This code is cleaning up a messy World Bank data set so it’s easier to work with in R. First, it loads the tidyverse package and reads the CSV file, fixing missing values like “..”. Then it cleans the year column names by removing extra text such as “\[YR2020\]”. After that, it gets rid of the extra metadata rows at the bottom and keeps only real country and series data. The code reshapes the data set so that each row shows one country, one year, and one indicator value instead of having many year columns. It also pulls out any units (like “% of population”) from the series name into a new column. In the end, it makes a clean, tidy data set that’s ready for analysis, and lets you save them as two new CSV file called WDBD_tidy_long.csv and WDBD_wide_by_series.csv.
+
+##  Part 2 movie data set
+
+What looks messy?
+
+1.  The title column mixes movie name and year together.
+2.  The genres column has many genres in one cell.
+3.  Some rows have missing or unclear genres.
+4.  Overall, it’s not tidy because one cell has too much info.
+
+```{r}
+movies_raw <- readr::read_csv("movies.csv", show_col_types = FALSE)
+
+movies_clean <- movies_raw %>%
+  mutate(
+    year  = stringr::str_extract(title, "\\((\\d{4})\\)") %>% readr::parse_integer(),
+    title = stringr::str_replace(title, " \\(\\d{4}\\)$", "") %>% stringr::str_squish()
+  )
+
+movies_long <- movies_raw %>%
+  mutate(
+    year = str_extract(title, "\\d{4}"),
+    year = as.integer(year),
+    title = str_replace(title, " \\(\\d{4}\\)", "") %>% str_squish()
+  ) %>%
+  separate_rows(genres, sep = "\\|") %>%
+  filter(genres != "(no genres listed)", genres != "")
+
+movies_wide <- movies_long %>%
+  mutate(val = 1L) %>%
+  pivot_wider(id_cols = c(movieId, title, year),
+              names_from = genres,
+              values_from = val,
+              values_fill = 0L)
+
+dplyr::glimpse(movies_long)
+
+readr::write_csv(movies_long, "movies_tidy_long.csv")
+readr::write_csv(movies_wide, "movies_genre_matrix.csv")
+```
+
+I load the movies file, pull the release year out of the title using a simple regex, and keep a clean title without the parentheses. Then I split the pipe-separated genres so each genre gets its own row (tidy format), drop the “no genres listed” placeholder, and trim blanks. This gives me a tidy long table (movieId, title, year, genres) ready for joins or summaries; I also show an optional wide version that turns genres into 0/1 columns if I need features for modeling.
