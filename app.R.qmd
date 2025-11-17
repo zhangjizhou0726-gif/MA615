@@ -1,0 +1,166 @@
+---
+title: "app.R"
+format: html
+editor: visual
+---
+
+```{r}
+library(shiny)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(DT)
+
+
+prizes <- read_csv("prizes_clean.csv")
+
+inst_choices  <- sort(unique(na.omit(prizes$degree_institution)))
+genre_choices <- sort(unique(na.omit(prizes$prize_genre)))
+role_choices  <- sort(unique(na.omit(prizes$person_role)))
+eth_choices   <- sort(unique(na.omit(prizes$ethnicity_macro)))
+uk_choices    <- sort(unique(na.omit(prizes$uk_residence)))
+
+ui <- navbarPage(
+  "Prizes Explorer",
+
+  tabPanel(
+    "Dataset explorer",
+
+    sidebarLayout(
+      sidebarPanel(
+        h4("Filters"),
+        selectInput("inst_filter", "Degree institution:",
+                    choices = c("All", inst_choices),
+                    selected = "All"),
+        selectInput("genre_filter", "Prize genre:",
+                    choices = c("All", genre_choices),
+                    selected = "All"),
+        selectInput("role_filter", "Person role:",
+                    choices = c("All", role_choices),
+                    selected = "All"),
+        selectInput("eth_filter", "Ethnicity macro:",
+                    choices = c("All", eth_choices),
+                    selected = "All")
+      ),
+      mainPanel(
+        h4("Filtered data"),
+        DTOutput("table_out"),
+        br(),
+        helpText("Use the filters on the left to explore the dataset.")
+      )
+    )
+  ),
+
+  tabPanel(
+    "Prizes by institution",
+
+    sidebarLayout(
+      sidebarPanel(
+        selectInput("role_filter2", "Choose a role:",
+                    choices = c("All", role_choices),
+                    selected = "All"),
+        sliderInput("top_n_inst", "Number of top institutions to show:",
+                    min = 5, max = 30, value = 10, step = 1)
+      ),
+      mainPanel(
+        h4("Number of prizes by institution"),
+        plotOutput("inst_plot"),
+        br(),
+        helpText("This plot shows which institutions appear most often in the prize data.")
+      )
+    )
+  ),
+
+  tabPanel(
+    "Ethnicity & UK residence",
+
+    sidebarLayout(
+      sidebarPanel(
+        selectInput("uk_filter", "UK residence:",
+                    choices = c("All", uk_choices),
+                    selected = "All")
+      ),
+      mainPanel(
+        h4("Ethnicity distribution"),
+        plotOutput("eth_plot"),
+        br(),
+        helpText("This plot compares ethnicity groups, optionally within a UK residence category.")
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+
+  filtered_data <- reactive({
+    df <- prizes
+
+    if (input$inst_filter != "All") {
+      df <- df %>% filter(degree_institution == input$inst_filter)
+    }
+    if (input$genre_filter != "All") {
+      df <- df %>% filter(prize_genre == input$genre_filter)
+    }
+    if (input$role_filter != "All") {
+      df <- df %>% filter(person_role == input$role_filter)
+    }
+    if (input$eth_filter != "All") {
+      df <- df %>% filter(ethnicity_macro == input$eth_filter)
+    }
+
+    df
+  })
+
+  output$table_out <- renderDT({
+    datatable(
+      filtered_data(),
+      options = list(pageLength = 10, scrollX = TRUE)
+    )
+  })
+
+  output$inst_plot <- renderPlot({
+    df <- prizes
+
+    if (input$role_filter2 != "All") {
+      df <- df %>% filter(person_role == input$role_filter2)
+    }
+
+    df_plot <- df %>%
+      filter(!is.na(degree_institution)) %>%
+      count(degree_institution, sort = TRUE) %>%
+      slice_head(n = input$top_n_inst)
+
+    ggplot(df_plot, aes(x = reorder(degree_institution, n), y = n)) +
+      geom_col() +
+      coord_flip() +
+      labs(
+        x = "Degree institution",
+        y = "Number of prizes",
+        title = "Top institutions by number of prizes"
+      )
+  })
+
+  output$eth_plot <- renderPlot({
+    df <- prizes
+
+    if (input$uk_filter != "All") {
+      df <- df %>% filter(uk_residence == input$uk_filter)
+    }
+
+    df_plot <- df %>%
+      filter(!is.na(ethnicity_macro)) %>%
+      count(ethnicity_macro)
+
+    ggplot(df_plot, aes(x = reorder(ethnicity_macro, n), y = n)) +
+      geom_col() +
+      coord_flip() +
+      labs(
+        x = "Ethnicity (macro)",
+        y = "Count",
+        title = "Ethnicity distribution"
+      )
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
