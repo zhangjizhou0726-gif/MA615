@@ -1,0 +1,261 @@
+---
+title: "A Descriptive Time-Series Analysis of Daily Environmental Observations in Xiamen (2024)"
+author: "Jizhou Zhang"
+date: today
+format:
+  pdf:
+    pdf-engine: xelatex
+    number-sections: true
+    fontsize: 11pt
+    geometry: margin=1in
+mainfont: "Times New Roman"
+linestretch: 1.3
+---
+
+```{r}
+#| include: false
+
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE
+)
+
+library(tidyverse)
+library(lubridate)
+```
+
+```{r}
+#| echo: false
+
+library(tidyverse)
+library(lubridate)
+
+df <- read_csv("Xiamen 2024.csv")
+
+df <- df %>%
+  mutate(date = as.Date(date)) %>%
+  select(date, tavg, tmin, tmax, prcp, wspd, pres)
+
+```
+
+## Abstract
+
+This report presents a descriptive analysis of daily environmental data collected in Xiamen during the year 2024. The purpose of this study is to explore how the data change over time and to summarize key patterns observed within a single year. Using basic summary statistics and visualizations, the report examines overall variability, differences across months, and the presence of unusually high values.
+
+Rather than focusing on prediction or causal explanations, this analysis emphasizes understanding the structure of the data itself. By documenting temporal variation and within year patterns, the report provides a clear overview of the daily observations and highlights features that may be important for future statistical analysis.
+
+## Introduction
+
+Understanding how daily environmental data change over time is an important step in applied data analysis. Daily observations often show substantial variation within a year, and this variation can reflect both short term fluctuations and broader seasonal patterns. Before moving to more complex modeling approaches, it is useful to first examine the basic structure of the data and identify key features through descriptive analysis.
+
+Xiamen Island was selected as the focus of this project due to the availability of high-resolution daily environmental data and its clear island geography. The richness of the data allows for meaningful exploratory analysis while remaining consistent with the scope of a single-island case study.
+
+This report focuses on daily environmental observations collected in Xiamen during the year 2024. The goal of the analysis is not to explain why these patterns occur, but to describe how the values behave over time. In particular, the report examines overall variability, differences across months, and the occurrence of unusually high values within the year.
+
+By relying on summary statistics and simple visualizations, this study provides a clear overview of the temporal characteristics of the data. The findings help illustrate how daily observations are distributed across time and highlight patterns that may be relevant for future statistical analysis or more detailed environmental studies.
+
+## Exploratory Data Analysis
+
+This section presents an exploratory analysis of the daily environmental data from Xiamen in 2024. The purpose of this analysis is to examine the overall temporal structure of the data and to identify key patterns within the year. Rather than focusing on formal statistical modeling, the emphasis is placed on visual inspection and descriptive summaries.
+
+The analysis proceeds in three steps. First, the overall time series of daily observations is examined to assess general trends and variability. Next, the data are summarized at the monthly level to explore within year differences. Finally, the distribution of selected variables is examined to identify variability and the presence of extreme values.
+
+```{r}
+#| tbl-cap: "Summary statistics for key environmental variables in Xiamen, 2024."
+#| tbl-colwidths: [25, 15, 15, 15, 15]
+#| echo: false
+
+df %>%
+  summarise(
+    `Mean Temperature (°C)` = round(mean(tavg, na.rm = TRUE), 2),
+    `SD Temperature (°C)`   = round(sd(tavg, na.rm = TRUE), 2),
+    `Total Precipitation (mm)` = round(sum(prcp, na.rm = TRUE), 1),
+    `Mean Wind Speed (km/h)` = round(mean(wspd, na.rm = TRUE), 2),
+    `Mean Pressure (hPa)`   = round(mean(pres, na.rm = TRUE), 2)
+  ) %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = "Statistic",
+    values_to = "Value"
+  )
+```
+
+Table 1 summarizes key descriptive statistics for the environmental variables analyzed in this study, providing an overview of central tendency and overall magnitude.
+
+```{r}
+#| fig-width: 6
+#| fig-height: 3.5
+#| fig-cap: "Daily average temperature in Xiamen during 2024."
+
+ggplot(df, aes(x = date, y = tavg)) +
+  geom_line() +
+  labs(x = "Date", y = "Average temperature") +
+  theme_minimal()
+```
+
+Figure 1 shows daily average temperature in Xiamen during 2024, ranging from approximately 12°C in winter to about 30°C in summer. The annual temperature range is therefore close to 18°C, indicating strong seasonal variation within the year.
+
+```{r}
+#| fig-width: 6
+#| fig-height: 3.5
+#| fig-cap: "Monthly average temperature in Xiamen during 2024."
+
+df %>%
+  mutate(month = lubridate::month(date, label = TRUE)) %>%
+  group_by(month) %>%
+  summarise(monthly_mean = mean(tavg, na.rm = TRUE)) %>%
+  ggplot(aes(x = month, y = monthly_mean)) +
+  geom_col() +
+  labs(
+    x = "Month",
+    y = "Average temperature"
+  ) +
+  theme_minimal()
+```
+
+Figure 2 summarizes daily average temperature at the monthly level. Monthly means increase steadily from January to July, peak in midsummer, and decline afterward, with summer months averaging more than 10°C higher than winter months.
+
+```{r}
+#| fig-width: 5
+#| fig-height: 3.5
+#| fig-cap: "Distribution of daily average temperature in Xiamen, 2024."
+
+ggplot(df, aes(x = tavg)) +
+  geom_histogram(bins = 30) +
+  labs(
+    x = "Average temperature",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+Figure 3 displays the distribution of daily average temperature values in 2024. Most observations fall between roughly 18°C and 28°C, while values below 15°C or above 30°C occur on relatively few days.
+
+```{r}
+#| fig-width: 6
+#| fig-height: 3.5
+#| fig-cap: "Daily precipitation in Xiamen during 2024."
+
+ggplot(df, aes(x = date, y = prcp)) +
+  geom_col() +
+  labs(x = "Date", y = "Precipitation") +
+  theme_minimal()
+
+prcp_p95 <- quantile(df$prcp, 0.95, na.rm = TRUE)
+prcp_p95
+```
+
+Figure 4 shows that precipitation is highly uneven across the year, with many days recording zero rainfall and a small number of days exceeding roughly 30 mm, indicating that a limited set of heavy-rain days contributes disproportionately to annual precipitation. Using the 95th percentile as a threshold, daily precipitation values above approximately 20.4 mm, represent the most extreme rainfall events in 2024, occurring on only about five percent of days.
+
+```{r}
+#| fig-width: 6
+#| fig-height: 3.5
+#| fig-cap: "Daily wind speed in Xiamen during 2024."
+
+ggplot(df, aes(x = date, y = wspd)) +
+  geom_line() +
+  labs(x = "Date", y = "Wind speed") +
+  theme_minimal()
+
+wspd_median <- median(df$wspd, na.rm = TRUE)
+wspd_p95 <- quantile(df$wspd, 0.95, na.rm = TRUE)
+
+```
+
+Wind speed is generally moderate across the year, with a median of about 10.5 km/h and the top five percent of days exceeding roughly 20.5 km/h, indicating occasional high wind events.
+
+```{r}
+#| fig-width: 6
+#| fig-height: 3.5
+#| fig-cap: "Daily atmospheric pressure in Xiamen during 2024."
+
+ggplot(df, aes(x = date, y = pres)) +
+  geom_line() +
+  labs(x = "Date", y = "Pressure") +
+  theme_minimal()
+
+pres_min <- min(df$pres, na.rm = TRUE)
+pres_max <- max(df$pres, na.rm = TRUE)
+```
+
+Atmospheric pressure varies within a relatively narrow band over the year, ranging from approximately 982 hPa to 1030 hPa, which suggests gradual seasonal movement rather than abrupt day to day shifts.
+
+## Relationships Between Variables
+
+This section explores simple relationships between key environmental variables using scatter plots.
+
+```{r}
+#| fig-width: 5
+#| fig-height: 4
+#| fig-cap: "Relationship between daily average temperature and atmospheric pressure."
+
+ggplot(df, aes(x = tavg, y = pres)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "Average temperature (°C)",
+    y = "Pressure (hPa)"
+  ) +
+  theme_minimal()
+
+cor_tavg_pres <- cor(df$tavg, df$pres, use = "complete.obs")
+```
+
+Figure 6 shows a strong negative relationship between daily average temperature and atmospheric pressure, with a correlation of −0.87, indicating that higher temperatures are consistently associated with lower pressure levels.
+
+```{r}
+#| fig-width: 5
+#| fig-height: 4
+#| fig-cap: "Relationship between daily average temperature and wind speed."
+
+ggplot(df, aes(x = tavg, y = wspd)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "Average temperature (°C)",
+    y = "Wind speed (km/h)"
+  ) +
+  theme_minimal()
+
+cor_tavg_wspd <- cor(df$tavg, df$wspd, use = "complete.obs")
+```
+
+Figure 7 suggests a very weak relationship between daily average temperature and wind speed, with a correlation of −0.11, indicating little linear association between the two variables.
+
+```{r}
+#| fig-width: 5
+#| fig-height: 4
+#| fig-cap: "Relationship between precipitation and atmospheric pressure on rainy days."
+
+df %>%
+  filter(!is.na(prcp), prcp > 0) %>%
+  ggplot(aes(x = pres, y = prcp)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "Pressure (hPa)",
+    y = "Precipitation (mm)"
+  ) +
+  theme_minimal()
+```
+
+Figure 8 shows that precipitation amounts tend to be higher on lower pressure days, with a correlation of −0.25 among rainy days, suggesting a modest negative association between precipitation and atmospheric pressure.
+
+## Discussion
+
+**To what extent are the observed relationships driven by seasonal structure rather than short-term variation?**
+
+The strong negative correlation between temperature and atmospheric pressure (r = −0.87) is largely driven by shared seasonal patterns rather than day-to-day co-movement. Both variables exhibit clear annual cycles, indicating that the association reflects broad temporal structure instead of short-term interactions.
+
+**How does temporal aggregation influence the interpretation of variability in the data?**
+
+Daily observations show substantial short-term fluctuation, while monthly aggregation reduces noise and highlights underlying seasonal differences. In particular, monthly mean temperatures differ by more than 10°C between winter and summer, demonstrating that conclusions about variability depend strongly on the temporal scale of analysis.
+
+**What role do extreme events play in shaping precipitation patterns?**
+
+Precipitation is highly concentrated, with the top five percent of rainfall days exceeding the 95th percentile threshold and contributing disproportionately to total annual precipitation. This indicates that overall precipitation patterns are shaped more by a small number of extreme events than by consistent daily rainfall.
+
+## Conclusion
+
+This report provides a descriptive overview of daily environmental conditions in Xiamen during 2024, with a particular focus on temporal structure and variable relationships. The analysis shows that temperature exhibits strong seasonal variation, while precipitation patterns are heavily influenced by a small number of extreme rainfall events. Relationships among variables, especially between temperature and atmospheric pressure, appear to be largely driven by shared seasonal trends rather than short-term fluctuations. These findings highlight the importance of temporal scale when interpreting environmental data, as daily and monthly summaries can lead to different conclusions about variability. Overall, the results demonstrate the value of exploratory analysis for single-year datasets and suggest that future work would benefit from longer time series or broader spatial coverage.
